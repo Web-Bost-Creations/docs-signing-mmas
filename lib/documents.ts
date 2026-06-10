@@ -6,6 +6,7 @@ export type Document = {
   category: string;
   required: boolean;
   pdfUrl: string;
+  signaturePlacementKey?: string;
 };
 
 export type ClientInfo = {

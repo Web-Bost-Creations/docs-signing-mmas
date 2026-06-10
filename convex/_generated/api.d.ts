@@ -10,6 +10,7 @@
 
 import type * as files from "../files.js";
 import type * as signatures from "../signatures.js";
+import type * as signingLinks from "../signingLinks.js";
 
 import type {
   ApiFromModules,
@@ -20,6 +21,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   files: typeof files;
   signatures: typeof signatures;
+  signingLinks: typeof signingLinks;
 }>;
 
 /**

@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import { Document, SignedDoc } from "@/lib/documents";
 import { PdfViewer } from "@/components/PdfViewer";
 import { embedSignatureInPdf } from "@/lib/embedSignature";
-import { SIGNATURE_PLACEMENTS } from "@/lib/signaturePlacements";
+import { getSignaturePlacement } from "@/lib/signaturePlacements";
 import { exportSignatureFromCanvas } from "@/lib/trimSignatureCanvas";
 import { pdfBytesToBlob } from "@/lib/pdfBytesToBlob";
 import { X, RotateCcw, Check, PenLine, Loader2 } from "lucide-react";
@@ -115,10 +115,7 @@ export function SigningModal({ document: doc, clientName, onComplete, onClose }:
     setError(null);
 
     try {
-      const placement = SIGNATURE_PLACEMENTS[doc.id];
-      if (!placement) {
-        throw new Error(`No signature placement configured for ${doc.id}`);
-      }
+      const placement = getSignaturePlacement(doc);
 
       const shared = {
         pdfUrl: doc.pdfUrl,

@@ -220,7 +220,7 @@ export function SuccessScreen({ clientInfo, signedDocs, documents, submissionId 
                       }}
                     >
                       <Download className="w-3 h-3" />
-                      Matt's Copy
+                      Matt&apos;s Copy
                     </button>
                   </div>
                 </div>

@@ -10,6 +10,7 @@ export const submitSignatures = mutation({
     clientName: v.string(),
     clientEmail: v.string(),
     clientCompany: v.optional(v.string()),
+    signingLinkId: v.optional(v.id("signingLinks")),
     signatures: v.array(
       v.object({
         documentId: v.string(),
@@ -29,6 +30,7 @@ export const submitSignatures = mutation({
       submittedAt: new Date().toISOString(),
       status: "complete",
       totalDocs: args.signatures.length,
+      signingLinkId: args.signingLinkId,
     });
 
     // Insert each signed document

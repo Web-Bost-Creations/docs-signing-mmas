@@ -50,40 +50,52 @@ export async function embedSignatureInPdf({
     height: sigHeight,
   });
 
-  page.drawText(signerName, {
-    x: placement.printedName.x,
-    y: placement.printedName.y,
-    size: placement.printedName.size,
-    font,
-    color: rgb(0.1, 0.1, 0.1),
-  });
+  if (placement.printedName) {
+    page.drawText(signerName, {
+      x: placement.printedName.x,
+      y: placement.printedName.y,
+      size: placement.printedName.size,
+      font,
+      color: rgb(0.1, 0.1, 0.1),
+    });
+  }
 
   const { month, day, year } = parseFormDate(signedAt);
   const textColor = rgb(0.1, 0.1, 0.1);
 
-  page.drawText(month, {
-    x: placement.date.month.x,
-    y: placement.date.month.y,
-    size: placement.date.month.size,
-    font,
-    color: textColor,
-  });
+  if (placement.dateSingle) {
+    page.drawText(`${month}/${day}/${year}`, {
+      x: placement.dateSingle.x,
+      y: placement.dateSingle.y,
+      size: placement.dateSingle.size,
+      font,
+      color: textColor,
+    });
+  } else if (placement.date) {
+    page.drawText(month, {
+      x: placement.date.month.x,
+      y: placement.date.month.y,
+      size: placement.date.month.size,
+      font,
+      color: textColor,
+    });
 
-  page.drawText(day, {
-    x: placement.date.day.x,
-    y: placement.date.day.y,
-    size: placement.date.day.size,
-    font,
-    color: textColor,
-  });
+    page.drawText(day, {
+      x: placement.date.day.x,
+      y: placement.date.day.y,
+      size: placement.date.day.size,
+      font,
+      color: textColor,
+    });
 
-  page.drawText(year, {
-    x: placement.date.year.x,
-    y: placement.date.year.y,
-    size: placement.date.year.size,
-    font,
-    color: textColor,
-  });
+    page.drawText(year, {
+      x: placement.date.year.x,
+      y: placement.date.year.y,
+      size: placement.date.year.size,
+      font,
+      color: textColor,
+    });
+  }
 
   if (copyLabel) {
     for (const p of pages) {

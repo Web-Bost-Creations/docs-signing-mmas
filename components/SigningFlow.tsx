@@ -1,46 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Id } from "@/convex/_generated/dataModel";
 import { DocumentList } from "@/components/DocumentList";
 import { SigningModal } from "@/components/SigningModal";
 import { SuccessScreen } from "@/components/SuccessScreen";
 import { BrandHeader } from "@/components/BrandHeader";
 import { PageShell } from "@/components/PageShell";
-import {
-  ClientInfo,
-  Document,
-  SignedDoc,
-  DOCUMENTS,
-  CLIENT_INFO_KEY,
-} from "@/lib/documents";
+import { ClientInfo, Document, SignedDoc } from "@/lib/documents";
 
 type Step = "documents" | "success";
 
-export default function DocumentsPage() {
-  const router = useRouter();
+type Props = {
+  documents: Document[];
+  clientInfo: ClientInfo;
+  signingLinkId?: Id<"signingLinks">;
+  welcomeDescription?: string;
+  successDescription?: string;
+};
+
+export function SigningFlow({
+  documents,
+  clientInfo,
+  signingLinkId,
+  welcomeDescription,
+  successDescription,
+}: Props) {
   const [step, setStep] = useState<Step>("documents");
-  const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null);
-  const [selectedDocs, setSelectedDocs] = useState<Set<string>>(new Set());
+  const [selectedDocs, setSelectedDocs] = useState<Set<string>>(
+    new Set(documents.map((d) => d.id))
+  );
   const [signingDoc, setSigningDoc] = useState<Document | null>(null);
   const [signedDocs, setSignedDocs] = useState<SignedDoc[]>([]);
   const [submissionId, setSubmissionId] = useState<string>("");
-
-  useEffect(() => {
-    const stored = sessionStorage.getItem(CLIENT_INFO_KEY);
-    if (!stored) {
-      router.replace("/");
-      return;
-    }
-
-    try {
-      const info = JSON.parse(stored) as ClientInfo;
-      setClientInfo(info);
-      setSelectedDocs(new Set(DOCUMENTS.map((d) => d.id)));
-    } catch {
-      router.replace("/");
-    }
-  }, [router]);
 
   const handleSignatureComplete = (result: Omit<SignedDoc, "docId">) => {
     if (!signingDoc) return;
@@ -60,18 +52,15 @@ export default function DocumentsPage() {
     setSigningDoc(null);
   };
 
-  if (!clientInfo) {
-    return null;
-  }
-
-  const firstName = clientInfo.fullName.split(" ")[0];
-  const selectedDocsList = DOCUMENTS.filter((d) => selectedDocs.has(d.id));
+  const selectedDocsList = documents.filter((d) => selectedDocs.has(d.id));
   const selectedSignedCount = selectedDocsList.filter((d) =>
     signedDocs.some((s) => s.docId === d.id)
   ).length;
-  const allRequiredSigned = DOCUMENTS.every((d) =>
-    signedDocs.some((s) => s.docId === d.id)
-  );
+  const allRequiredSigned = documents
+    .filter((d) => d.required)
+    .every((d) => signedDocs.some((s) => s.docId === d.id));
+
+  const firstName = clientInfo.fullName.split(" ")[0];
 
   return (
     <PageShell>
@@ -79,14 +68,16 @@ export default function DocumentsPage() {
         title={step === "documents" ? `Welcome, ${firstName}` : "All done"}
         description={
           step === "documents"
-            ? "Review each PDF below, then sign both documents to authorize service."
-            : "Your signed documents have been submitted to Matt's Mobile Mechanic."
+            ? welcomeDescription ??
+              `Review and sign ${documents.length} document${documents.length !== 1 ? "s" : ""} below.`
+            : successDescription ??
+              "Your signed documents have been submitted to Matt's Mobile Mechanic."
         }
       />
 
       {step === "documents" && (
         <DocumentList
-          documents={DOCUMENTS}
+          documents={documents}
           selectedDocs={selectedDocs}
           setSelectedDocs={setSelectedDocs}
           signedDocs={signedDocs}
@@ -94,10 +85,10 @@ export default function DocumentsPage() {
           clientInfo={clientInfo}
           allRequiredSigned={allRequiredSigned}
           selectedSignedCount={selectedSignedCount}
+          signingLinkId={signingLinkId}
           onSubmitAll={(id) => {
             setSubmissionId(id);
             setStep("success");
-            sessionStorage.removeItem(CLIENT_INFO_KEY);
           }}
         />
       )}
@@ -106,7 +97,7 @@ export default function DocumentsPage() {
         <SuccessScreen
           clientInfo={clientInfo}
           signedDocs={signedDocs}
-          documents={DOCUMENTS}
+          documents={documents}
           submissionId={submissionId}
         />
       )}

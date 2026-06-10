@@ -30,6 +30,7 @@ type Props = {
   allRequiredSigned: boolean;
   selectedSignedCount: number;
   onSubmitAll: (id: string) => void;
+  signingLinkId?: Id<"signingLinks">;
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -48,10 +49,12 @@ export function DocumentList({
   allRequiredSigned,
   selectedSignedCount,
   onSubmitAll,
+  signingLinkId,
 }: Props) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const submitSignatures = useMutation(api.signatures.submitSignatures);
+  const completeSigningLink = useMutation(api.signingLinks.completeSigningLink);
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
 
   const toggleSelect = (doc: Document) => {
@@ -97,8 +100,17 @@ export function DocumentList({
         clientName: clientInfo.fullName,
         clientEmail: clientInfo.email,
         clientCompany: clientInfo.company || "",
+        signingLinkId,
         signatures,
       });
+
+      if (signingLinkId) {
+        await completeSigningLink({
+          signingLinkId,
+          submissionId: id as Id<"submissions">,
+        });
+      }
+
       onSubmitAll(id);
     } catch (err) {
       console.error(err);
